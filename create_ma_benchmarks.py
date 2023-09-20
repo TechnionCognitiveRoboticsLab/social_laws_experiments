@@ -4,10 +4,13 @@ from unified_planning.io.pddl_reader import *
 import random
 import os
 import json
+import logging
 
 PDDL_DOMAINS_PATH = "downward-benchmarks"
 AGENT_TYPES_FILE = "domain_agent_types.json"
 random.seed(2023)
+logging.basicConfig(filename='cretae_ma_benchmarks.log', encoding='utf-8', level=logging.DEBUG)
+
 
 """
 This module contains code that scans through all of the PDDL domains in PDDL_DOMAINS_PATH (downward-benchmarks).
@@ -21,25 +24,26 @@ If this file exists, the computation is skipped and the results are loaded.
 
 
 def convert_to_ma(domain, problem, domain_file = "domain.pddl"):
+    logging.info("Reading %s : %s", domain, problem)
     reader = PDDLReader()
     domain_filename = os.path.join(PDDL_DOMAINS_PATH, domain, domain_file)
     problem_filename = os.path.join(PDDL_DOMAINS_PATH, domain, problem)
     
     try:
         problem = reader.parse_problem(domain_filename, problem_filename)
-    except:
-        #print("\t Problem parsing")
+    except Exception as e:
+        logging.info("Error parsing: %s", e)
         return None
         
     for utype in problem.user_types:
         agents = [utype.name]
         try:            
+            logging.info("Trying type %s as agent", utype.name)
             samac = SingleAgentToMultiAgentConverter(agents)
             ret = samac.compile(problem)            
             return utype.name
         except Exception as e:
-            pass
-            #print(e)            
+            logging.info("Error converting: %s", e)            
     return None
 
 def search_for_ma_agent_types():
@@ -58,14 +62,17 @@ def search_for_ma_agent_types():
 
 def get_ma_agent_types():
     if os.path.exists(AGENT_TYPES_FILE):
+        logging.info("File exists, reading it")
         with open(AGENT_TYPES_FILE, 'r') as openfile:
             domain_agent_types = json.load(openfile)        
     else:
+        logging.info("File does not exist, search for types")
         domain_agent_types = search_for_ma_agent_types()
         with open("domain_agent_types.json", "w") as outfile:
             json.dump(domain_agent_types, outfile)
     return domain_agent_types
 
-domain_agent_types = get_ma_agent_types()
-print(domain_agent_types)
+if __name__ == '__main__':
+    domain_agent_types = get_ma_agent_types()
+    print(domain_agent_types)
 
