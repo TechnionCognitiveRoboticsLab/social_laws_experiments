@@ -1,21 +1,34 @@
 from unified_planning.shortcuts import *
 from up_social_laws.sa_to_ma_converter import *
+from up_social_laws.robustness_checker import *
 from unified_planning.io.pddl_reader import *
 import random
 import os
-import json
+import csv
 import create_ma_benchmarks
 import logging
+import time
 
 PDDL_DOMAINS_PATH = "downward-benchmarks"
-AGENT_TYPES_FILE = "domain_agent_types.json"
+ROBUSTNESS_RESULTS_FILE = "robustness_results.csv"
 random.seed(2023)
 logging.basicConfig(filename='social_law_experiments.log', encoding='utf-8', level=logging.DEBUG)
-
+up.shortcuts.get_environment().credits_stream = None
 
 def main():
+    data = defaultdict(lambda : {})
     logging.info("Starting robustness check")
     domain_agent_types = create_ma_benchmarks.get_ma_agent_types()
+
+    if not os.path.exists(ROBUSTNESS_RESULTS_FILE):
+        results_file = open(ROBUSTNESS_RESULTS_FILE, "w")
+        print("domain", "problem", "time", "result", sep=",", file=results_file, flush=True)        
+    else:
+        with open(ROBUSTNESS_RESULTS_FILE) as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                data[row['domain']][row['problem']] = row
+        results_file = open(ROBUSTNESS_RESULTS_FILE, "a")    
 
     for domain in domain_agent_types.keys():
         logging.info("Starting domain %s", domain)
@@ -25,6 +38,10 @@ def main():
         logging.info("Got problems %s", problems)
 
         for problem_file in problems:
+            if domain in data.keys() and problem_file in data[domain].keys():
+                logging.info("Problem %s:%s is already in results, skipping", domain, problem_file)
+                continue            
+
             logging.info("Reading %s:%s", domain, problem_file)
             reader = PDDLReader()
             
@@ -43,7 +60,24 @@ def main():
                 logging.error("Failed to convert to MA: %s", e)
                 continue
 
-            ma_problem = samac_ret.problem
+            logging.info("Checking robustness")
+            try:
+                ma_problem = samac_ret.problem
+                slrc = SocialLawRobustnessChecker(planner_name="fast-downward")
+
+                t1 = time.time()
+                slrc_result = slrc.is_robust(ma_problem)
+                t2 = time.time()                       
+                
+                logging.info("Took %s time to get result: %s", t2-t1, slrc_result.status.name)
+
+                print(domain, problem_file, str(t2-t1), slrc_result.status.name, sep=",", file=results_file, flush=True)
+
+            except Exception as e:
+                logging.error("Error in robustness checking: %s", e)
+                continue
+
+
             logging.info("Success")
 
 if __name__ == '__main__':

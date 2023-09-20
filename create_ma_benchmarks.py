@@ -68,7 +68,7 @@ def get_ma_agent_types():
     else:
         logging.info("File does not exist, search for types")
         domain_agent_types = search_for_ma_agent_types()
-        with open("domain_agent_types.json", "w") as outfile:
+        with open(AGENT_TYPES_FILE, "w") as outfile:
             json.dump(domain_agent_types, outfile)
     return domain_agent_types
 
