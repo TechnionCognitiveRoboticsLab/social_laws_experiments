@@ -8,9 +8,13 @@ import csv
 import create_ma_benchmarks
 import logging
 import time
+from call_function_with_timeout import SetTimeout
+
 
 PDDL_DOMAINS_PATH = "downward-benchmarks"
 ROBUSTNESS_RESULTS_FILE = "robustness_results.csv"
+PLANNER_TIMEOUT = 60
+
 random.seed(2023)
 logging.basicConfig(filename='social_law_experiments.log', encoding='utf-8', level=logging.DEBUG)
 up.shortcuts.get_environment().credits_stream = None
@@ -64,14 +68,22 @@ def main():
             try:
                 ma_problem = samac_ret.problem
                 slrc = SocialLawRobustnessChecker(planner_name="fast-downward")
-
-                t1 = time.time()
-                slrc_result = slrc.is_robust(ma_problem)
-                t2 = time.time()                       
                 
-                logging.info("Took %s time to get result: %s", t2-t1, slrc_result.status.name)
-
-                print(domain, problem_file, str(t2-t1), slrc_result.status.name, sep=",", file=results_file, flush=True)
+                def check_robustness():
+                    t1 = time.time()                
+                    slrc_result = slrc.is_robust(ma_problem)
+                    t2 = time.time()                       
+                    return t2-t1, slrc_result
+                func_with_timeout = SetTimeout(check_robustness, timeout=PLANNER_TIMEOUT)
+                is_done, is_timeout, erro_message, results = func_with_timeout()
+                
+                if is_timeout:
+                    logging.info("Timed out")
+                    print(domain, problem_file, "TO", "NA", sep=",", file=results_file, flush=True)
+                else:
+                    elapsed_time, slrc_result = results
+                    logging.info("Took %s time to get result: %s", elapsed_time, slrc_result.status.name)
+                    print(domain, problem_file, str(elapsed_time), slrc_result.status.name, sep=",", file=results_file, flush=True)
 
             except Exception as e:
                 logging.error("Error in robustness checking: %s", e)
