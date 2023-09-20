@@ -1,0 +1,9 @@
+[submodule "unified-planning"]
+	path = unified-planning
+	url = https://github.com/aiplan4eu/unified-planning.git
+[submodule "up-fast-downward"]
+	path = up-fast-downward
+	url = https://github.com/aiplan4eu/up-fast-downward.git
+[submodule "up-social-laws"]
+	path = up-social-laws
+	url = https://github.com/aiplan4eu/up-social-laws.git
