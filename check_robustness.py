@@ -10,7 +10,7 @@ import logging
 PDDL_DOMAINS_PATH = "downward-benchmarks"
 AGENT_TYPES_FILE = "domain_agent_types.json"
 random.seed(2023)
-logging.basicConfig(filename='check_robustness.log', encoding='utf-8', level=logging.DEBUG)
+logging.basicConfig(filename='social_law_experiments.log', encoding='utf-8', level=logging.DEBUG)
 
 
 def main():
