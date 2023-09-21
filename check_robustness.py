@@ -52,7 +52,7 @@ def check_robustness(args):
         
         elapsed_time = t2 - t1
 
-        logging.info("Took %s time to get result: %s", elapsed_time, slrc_result.status.name)
+        logging.info("Took %s time to get result: %s for %s:%s", elapsed_time, slrc_result.status.name, domain, problem_name)
         with open(ROBUSTNESS_RESULTS_FILE, "a") as results_file:
             print(domain, problem_name, str(elapsed_time), slrc_result.status.name, sep=",", file=results_file, flush=True)
 
@@ -90,22 +90,12 @@ def generate_job_list():
             yield domain, problem_file, domain_agent_types[domain]
 
 def main():
+    # check_robustness(("transport-opt14-strips", "p01.pddl", "vehicle"))
     jobs = generate_job_list()
     job_list = list(jobs)
 
     with ProcessPool() as pool:
         future = pool.map(check_robustness, job_list, timeout=PLANNER_TIMEOUT)
-
-        # try:
-        #     for input, result in zip(job_list, future.result()):
-        #         print(input, result)
-        # except TimeoutError as error:
-        #     print("function took longer than %d seconds" % error.args[1])
-        # except ProcessExpired as error:
-        #     print("%s. Exit code: %d" % (error, error.exitcode))
-        # except Exception as error:
-        #     print("function raised %s" % error)
-        #     print(error.traceback)  # Python's traceback of remote process
 
 if __name__ == '__main__':
     main()
