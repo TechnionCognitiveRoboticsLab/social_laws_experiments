@@ -1,0 +1,11 @@
+{
+    "ros.distro": "humble",
+    "python.analysis.extraPaths": [
+        "./up-social-laws"
+    ],
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}
