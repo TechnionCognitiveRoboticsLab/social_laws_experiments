@@ -10,3 +10,6 @@
 [submodule "downward-benchmarks"]
 	path = downward-benchmarks
 	url = https://github.com/aibasel/downward-benchmarks.git
+[submodule "up-fast-forward"]
+	path = up-fast-forward
+	url = git@github.com:TechnionCognitiveRoboticsLab/up-fast-forward.git
