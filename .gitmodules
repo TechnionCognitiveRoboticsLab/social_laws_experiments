@@ -6,7 +6,7 @@
 	url = https://github.com/aiplan4eu/up-fast-downward.git
 [submodule "up-social-laws"]
 	path = up-social-laws
-	url = https://github.com/aiplan4eu/up-social-laws.git
+	url = https://github.com/TechnionCognitiveRoboticsLab/up-social-laws.git
 [submodule "downward-benchmarks"]
 	path = downward-benchmarks
 	url = https://github.com/aibasel/downward-benchmarks.git
