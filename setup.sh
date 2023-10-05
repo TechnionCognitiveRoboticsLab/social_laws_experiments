@@ -1,0 +1,1 @@
+export PYTHONPATH=$PYTHONPATH:`pwd`/unified-planning:`pwd`/up-fast-downward:`pwd`/up-fast-forward:`pwd`/up-social-laws
